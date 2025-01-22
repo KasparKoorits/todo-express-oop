@@ -1,24 +1,40 @@
 import { Todo } from "../models/todo.js";
+import { fileManager } from "../utils/files.js";
 
 class todoController {
   constructor() {
+    // holds todo objects
     this.TODOS = [];
+    this.initTODOS();
   }
 
-  createTodo(req, res) {
+  async createTodo(req, res) {
+    // get data from POST
     const task = req.body.task;
-
+    // create new todo object via Todo model
     const newTodo = new Todo(Math.random().toString(), task);
-
+    // add new todo object to TODOS array
     this.TODOS.push(newTodo);
-
+    // save data to file
+    await fileManager.writeFile("./data/todos.json", this.TODOS);
+    // create correct response
     res.json({
       message: "Created new object",
       newTask: newTodo,
     });
   }
+
   getTodos(req, res) {
     res.json({ tasks: this.TODOS });
+  }
+
+  async initTODOS() {
+    const todosData = await fileManager.readFile("./data/todos.json");
+    if (todosData !== null) {
+      this.TODOS = todosData;
+    } else {
+      this.TODOS = [];
+    }
   }
 
   updateTodo(req, res) {
